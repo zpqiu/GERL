@@ -13,7 +13,7 @@ import pandas as pd
 
 
 PADDING_NEWS = "<pad>"
-ROOT_PATH = os.environ["MINDWD"]
+ROOT_PATH = os.environ["GERL"]
 
 
 def word_tokenize(sent):
