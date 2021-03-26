@@ -76,21 +76,21 @@ def build_word_vocab(cfg, news_df):
 
 def build_newsid_to_title(cfg, news_df: pd.DataFrame, newsid_vocab: WordVocab, word_vocab: WordVocab):
     news2title = np.zeros((len(newsid_vocab) + 1, cfg.max_title_len), dtype=int)
-    news2title[0] = word_vocab.to_seq('<pad>', seq_len=args.max_title_len)
+    news2title[0] = word_vocab.to_seq('<pad>', seq_len=cfg.max_title_len)
     for news_id, title in news_df[["newsid, title"]].values:
         news_index = newsid_vocab.stoi[news_id]
-        news2title[news_index], cur_len = word_vocab.to_seq(cur_title, seq_len=args.max_title_len, with_len=True)
+        news2title[news_index], cur_len = word_vocab.to_seq(title, seq_len=cfg.max_title_len, with_len=True)
     
-    f_title_matrix = os.path.join(ROOT_PATH, "data", args.fsize, "news_title.npy")
+    f_title_matrix = os.path.join(ROOT_PATH, "data", cfg.fsize, "news_title.npy")
     np.save(f_title_matrix, news2title)
     print("title embedding: ", news2title.shape)
 
 def main(cfg):
     # Build vocab
     print("Loading news info")
-    f_train_news = os.path.join(ROOT_PATH, "data", args.fsize, "train/news.tsv")
-    f_dev_news = os.path.join(ROOT_PATH, "data", args.fsize, "dev/news.tsv")
-    f_test_news = os.path.join(ROOT_PATH, "data", args.fsize, "test/news.tsv")
+    f_train_news = os.path.join(ROOT_PATH, "data", cfg.fsize, "train/news.tsv")
+    f_dev_news = os.path.join(ROOT_PATH, "data", cfg.fsize, "dev/news.tsv")
+    f_test_news = os.path.join(ROOT_PATH, "data", cfg.fsize, "test/news.tsv")
 
     print("Loading training news")
     train_news = pd.read_csv(f_train_news, sep="\t", encoding="utf-8",
@@ -112,7 +112,7 @@ def main(cfg):
     print("All news: {}".format(len(all_news)))
 
     # Build user id vocab
-    f_behaviors = os.path.join(ROOT_PATH, "data", args.fsize, "train/behaviors.tsv")
+    f_behaviors = os.path.join(ROOT_PATH, "data", cfg.fsize, "train/behaviors.tsv")
     train_behavior = pd.read_csv(f_behaviors, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
     _ = build_user_id_vocab(cfg, train_behavior)
     
