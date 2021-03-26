@@ -53,14 +53,14 @@ def build_word_embeddings(vocab, pretrained_embedding, weights_output_file):
     np.save(weights_output_file, weights_matrix)
 
 def build_user_id_vocab(cfg, behavior_df):
-    user_vocab = WordVocab(behavior_df.uid.values, max_size=cfg.size, min_freq=1, lower=cfg.lower)
+    user_vocab = WordVocab(behavior_df.uid.values, max_size=720000, min_freq=1, lower=cfg.lower)
     print("USER ID VOCAB SIZE: {}".format(len(user_vocab)))
     f_user_vocab_path = os.path.join(ROOT_PATH, cfg.output, "userid_vocab.bin")
     user_vocab.save_vocab(f_user_vocab_path)
     return user_vocab
 
 def build_news_id_vocab(cfg, news_df):
-    news_vocab = WordVocab(news_df.newsid.values, max_size=cfg.size, min_freq=1, lower=cfg.lower)
+    news_vocab = WordVocab(news_df.newsid.values, max_size=140000, min_freq=1, lower=cfg.lower)
     print("NEWS ID VOCAB SIZE: {}".format(len(news_vocab)))
     f_news_vocab_path = os.path.join(ROOT_PATH, cfg.output, "newsid_vocab.bin")
     news_vocab.save_vocab(f_news_vocab_path)
@@ -68,7 +68,7 @@ def build_news_id_vocab(cfg, news_df):
 
 def build_word_vocab(cfg, news_df):
     news_df['title_token'] = news_df['title'].apply(lambda x: ' '.join(word_tokenize(x)))
-    word_vocab = WordVocab(news_df.text.values, max_size=cfg.size, min_freq=1, lower=cfg.lower)
+    word_vocab = WordVocab(news_df.title_token.values, max_size=cfg.size, min_freq=1, lower=cfg.lower)
     print("TEXT VOCAB SIZE: {}".format(len(word_vocab)))
     f_text_vocab_path = os.path.join(ROOT_PATH, cfg.output, "word_vocab.bin")
     word_vocab.save_vocab(f_text_vocab_path)
@@ -77,7 +77,8 @@ def build_word_vocab(cfg, news_df):
 def build_newsid_to_title(cfg, news_df: pd.DataFrame, newsid_vocab: WordVocab, word_vocab: WordVocab):
     news2title = np.zeros((len(newsid_vocab) + 1, cfg.max_title_len), dtype=int)
     news2title[0] = word_vocab.to_seq('<pad>', seq_len=cfg.max_title_len)
-    for news_id, title in news_df[["newsid, title"]].values:
+    for row in news_df[["newsid", "title"]].values:
+        news_id, title = row[:2]
         news_index = newsid_vocab.stoi[news_id]
         news2title[news_index], cur_len = word_vocab.to_seq(title, seq_len=cfg.max_title_len, with_len=True)
     
@@ -139,10 +140,11 @@ if __name__ == "__main__":
                         help="Corpus size")
     parser.add_argument("--pretrain", default="data/glove.840B.300d.txt", type=str,
                         help="Path of the raw review data file.")
-
     parser.add_argument("--output", default="data/new_vocab_graph", type=str,
                         help="Path of the training data file.")
     parser.add_argument("--size", default=80000, type=int,
+                        help="Path of the validation data file.")
+    parser.add_argument("--max_title_len", default=20, type=int,
                         help="Path of the validation data file.")
     parser.add_argument("--lower", action='store_true')
 
