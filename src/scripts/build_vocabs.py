@@ -140,7 +140,7 @@ if __name__ == "__main__":
                         help="Corpus size")
     parser.add_argument("--pretrain", default="data/glove.840B.300d.txt", type=str,
                         help="Path of the raw review data file.")
-    parser.add_argument("--output", default="data/new_vocab_graph", type=str,
+    parser.add_argument("--output", default="data/vocabs", type=str,
                         help="Path of the training data file.")
     parser.add_argument("--size", default=80000, type=int,
                         help="Path of the validation data file.")
