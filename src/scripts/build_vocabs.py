@@ -19,7 +19,7 @@ import numpy as np
 from datasets.vocab import WordVocab
 from utils.build_util import word_tokenize
 
-ROOT_PATH = os.environ["MINDWD"]
+ROOT_PATH = os.environ["GERL"]
 
 def build_word_embeddings(vocab, pretrained_embedding, weights_output_file):
     # Load Glove embedding

@@ -13,7 +13,7 @@ import tqdm
 from datasets.vocab import WordVocab
 
 random.seed(7)
-ROOT_PATH = os.environ["MINDWD"]
+ROOT_PATH = os.environ["GERL"]
 
 
 def build_examples(cfg, df: List[str], 

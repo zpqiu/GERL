@@ -23,7 +23,7 @@ import numpy as np
 
 from datasets.vocab import WordVocab
 
-ROOT_PATH = os.environ["MINDWD"]
+ROOT_PATH = os.environ["GERL"]
 
 def build_one_hop_neighbors(cfg, click_df: pd.DataFrame, part: str) -> Tuple[Dict, Dict]:
     user_dict = dict()
