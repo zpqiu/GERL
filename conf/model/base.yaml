@@ -1,0 +1,12 @@
+model:
+  name: base
+  model_name: gerl
+  word_embedding_size: 300
+  id_embedding_size: 128
+  conv_hidden_size: 300
+  hidden_size: 300
+  dropout: 0.2
+  neg_count: 4
+  transformer:
+    heads_num: 8
+    head_size: 16

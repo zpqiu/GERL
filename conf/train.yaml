@@ -1,0 +1,6 @@
+defaults:
+  - dataset: base
+  - model: base
+  - training: base
+  - hydra/output: custom
+  - logger: wandb

@@ -1,0 +1,4 @@
+hydra:
+  run:
+    # Output directory for normal runs
+    dir: ${env:GERL}/outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
