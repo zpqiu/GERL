@@ -37,10 +37,12 @@
 每个测试数据的格式为: 
 ```json
 {
+    imp_id: 000,
     user: 123,
     hist_news: [1, 2, 3]
     neighbor_users: [4, 5, 6]
     target_news: 7,
-    neighbor_news: [27, 28, 29]
+    neighbor_news: [27, 28, 29],
+    y: 1
 }
 ```
