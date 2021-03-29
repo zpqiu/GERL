@@ -24,13 +24,6 @@
     hist_news: [1, 2, 3]
     neighbor_users: [4, 5, 6]
     target_news: [7, 8, 9, 10, 11],
-    hist_users: [
-        [12, 13, 14],
-        [15, 16, 17],
-        [18, 19, 20],
-        [21, 22, 23],
-        [24, 25, 26],
-    ],
     neighbor_news: [
         [27, 28, 29],
         [30, 31, 32],
@@ -48,7 +41,6 @@
     hist_news: [1, 2, 3]
     neighbor_users: [4, 5, 6]
     target_news: 7,
-    hist_users: [12, 13, 14],
     neighbor_news: [27, 28, 29]
 }
 ```
