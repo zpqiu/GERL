@@ -38,15 +38,15 @@ def build_examples(cfg, df: pd.DataFrame,
     fw = open(f_out, "w", encoding="utf-8")
 
     random.seed(7)
-    loader = tqdm.tqdm(df[["uid", "imp", "id"]], desc="Building")
+    loader = tqdm.tqdm(df[["uid", "imp", "id"]].values, desc="Building")
     for row in loader:
         # row = json.loads(row)
         uid = row[0]
-        user_index = user_vocab.stoi[uid]
+        user_index = user_vocab.stoi.get(uid, 0)
         hist_news = _get_neighors(user_one_hop, user_index, cfg.max_user_one_hop)
         neighbor_users = _get_neighors(user_two_hop, user_index, cfg.max_user_two_hop)
         
-        samples = row[2].strip().split()
+        samples = row[1].strip().split()
         for sample in samples:
             news_id, label = sample.split("-")[:2]
             neighbor_news = []
