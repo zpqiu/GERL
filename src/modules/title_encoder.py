@@ -36,10 +36,9 @@ class TitleEncoder(nn.Module):
         self.word_self_attend = SelfAttendLayer(mh_out_size, mh_out_size)
         self.dropout = nn.Dropout(cfg.model.dropout)
 
-    def forword(
+    def forward(
             self,
             seqs,
-            seq_lens,
     ):
         """
 
@@ -98,6 +97,7 @@ class MultiHeadedAttention(nn.Module):
                 contiguous(). \
                 view(batch_size, seq_length, -1)
 
+        query = query.repeat(1, 1, heads_num).view(batch_size, -1, heads_num, input_size).transpose(1, 2)
         key = self.key_proj(key).view(batch_size, -1, heads_num, input_size).transpose(1, 2)
         value = self.value_proj(value).view(batch_size, -1, heads_num, per_head_size).transpose(1, 2)
 

@@ -1,6 +1,6 @@
 defaults:
-  - dataset: examples
-  - model: gerl
-  - training: base_training
+  - dataset: base
+  - model: base
+  - training: base
   - hydra/output: custom
   - logger: wandb

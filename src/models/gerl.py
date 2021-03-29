@@ -37,8 +37,8 @@ class Model(nn.Module):
         self.max_news_two_hop = cfg.dataset.max_news_two_hop
 
         # Init Layers
-        self.user_embedding = nn.Embedding(len(cfg.dataset.user_count), cfg.model.id_embedding_size)
-        self.newsid_embedding = nn.Embedding(len(cfg.dataset.news_count), cfg.model.id_embedding_size)
+        self.user_embedding = nn.Embedding(cfg.dataset.user_count, cfg.model.id_embedding_size)
+        self.newsid_embedding = nn.Embedding(cfg.dataset.news_count, cfg.model.id_embedding_size)
         self.title_encoder = TitleEncoder(cfg)
         self.user_two_hop_attend = SelfAttendLayer(cfg.model.id_embedding_size, cfg.model.id_embedding_size)
         self.user_one_hop_attend = SelfAttendLayer(cfg.model.id_embedding_size, cfg.model.id_embedding_size)
@@ -90,9 +90,9 @@ class Model(nn.Module):
 
         # Logit
         final_user_rep = torch.cat([user_one_hop_rep, user_embedding, user_two_hop_rep], dim=-1)
-        final_user_rep = final_user_rep.repeat(1, target_news_cnt).view(-1, self.embedding_size)
+        final_user_rep = final_user_rep.repeat(1, target_news_cnt).view(-1, self.embedding_size * 3)
         final_target_reps = torch.cat([news_two_hop_title_reps, news_two_hop_id_reps, target_news_reps])
-        final_target_reps = final_target_reps.view(-1, self.embedding_size)
+        final_target_reps = final_target_reps.view(-1, self.embedding_size * 3)
 
         logits = torch.sum(final_user_rep * final_target_reps, dim=-1)
         logits = logits.view(-1, target_news_cnt)

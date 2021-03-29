@@ -52,7 +52,7 @@ def run(cfg: DictConfig, rank: int, device: torch.device, corpus_path: str):
     print("Total train steps: ", train_steps)
     optimizer = torch.optim.Adam(model.parameters(), lr=cfg.training.learning_rate, weight_decay=1e-5)
 
-    model.title_embedding = model.title_embedding.to(device)
+    model.title_encoder.title_embedding = model.title_encoder.title_embedding.to(device)
     model.to(device)
     
     print("Worker %d is working ... " % rank)
@@ -151,14 +151,14 @@ def validate(cfg, epoch, model, device, fast_dev=False):
             if fast_dev and i > 10:
                 break
 
-            imp_ids += data.imp_id.cpu().numpy().tolist()
-            data = data.to(device)
+            imp_ids += data["imp_id"].cpu().numpy().tolist()
+            data ={key: value.to(device) for key, value in data.items()}
 
             # 1. Forward
-            pred = model.validation_step(data)
+            pred = model.prediction_step(data)
 
             preds += pred.cpu().numpy().tolist()
-            truths += data.y.long().cpu().numpy().tolist()
+            truths += data["y"].long().cpu().numpy().tolist()
 
         all_labels, all_preds = group_labels(truths, preds, imp_ids)
         metric_list = [x.strip() for x in cfg.training.metrics.split("||")]
