@@ -35,8 +35,6 @@ class TrainingDataset(Dataset):
             self.lines = [line.strip()
                           for line in tqdm.tqdm(f, desc="Loading Dataset")]
             self.corpus_lines = len(self.lines)
-
-        self.seq_len = args.seq_length
     
     def __len__(self):
         return self.corpus_lines
@@ -79,7 +77,7 @@ class TrainingDataset(Dataset):
 
 class ValidationDataset(TrainingDataset):
     def __getitem__(self, item):
-        user, hist_news, neighbor_users, target_news, neighbor_news, y = self.parse_line(item)
+        user, hist_news, neighbor_users, target_news, neighbor_news, y, imp_id = self.parse_line(item)
 
         if len(hist_news) < self.max_user_one_hop:
             hist_news = hist_news + [0, ] * (self.max_user_one_hop - len(hist_news))
@@ -95,7 +93,8 @@ class ValidationDataset(TrainingDataset):
                   "neighbor_users": neighbor_users,
                   "target_news": target_news,
                   "neighbor_news": neighbor_news,
-                  "y": y
+                  "y": y,
+                  "imp_id": imp_id,
                 }
 
         return {key: torch.tensor(value) for key, value in output.items()}
@@ -110,5 +109,6 @@ class ValidationDataset(TrainingDataset):
         target_news = j["target_news"]
         neighbor_news = j["neighbor_news"]
         y = j["y"]
+        imp_id = j["imp_id"]
 
-        return user, hist_news, neighbor_users, target_news, neighbor_news, y
+        return user, hist_news, neighbor_users, target_news, neighbor_news, y, imp_id

@@ -17,10 +17,6 @@ class TitleEncoder(nn.Module):
     def __init__(self, cfg):
         super(TitleEncoder, self).__init__()
         self.cfg = cfg
-        self.max_hist_len = cfg.dataset.max_hist_len
-        self.batch_size = cfg.training.batch_size
-        self.hidden_size = cfg.model.hidden_size
-
         self.vocab = WordVocab.load_vocab(cfg.dataset.word_vocab)
         self.word_embedding = build_embedding_layer(
             pretrained_embedding_path=cfg.dataset.get("word_embedding", ""),
@@ -32,9 +28,12 @@ class TitleEncoder(nn.Module):
 
         # NRMS hidden size is 150
         self.mh_self_attn = MultiHeadedAttention(
-            self.hidden_size, heads_num=cfg.model.transformer.heads_num
+            cfg.model.word_embedding_size, 
+            heads_num=cfg.model.transformer.heads_num, 
+            head_size=cfg.model.transformer.head_size,
         )
-        self.word_self_attend = SelfAttendLayer(self.hidden_size, self.hidden_size)
+        mh_out_size = cfg.model.transformer.heads_num * cfg.model.transformer.head_size
+        self.word_self_attend = SelfAttendLayer(mh_out_size, mh_out_size)
         self.dropout = nn.Dropout(cfg.model.dropout)
 
     def forword(
@@ -70,18 +69,14 @@ class MultiHeadedAttention(nn.Module):
     self-attention refers to https://arxiv.org/pdf/1706.03762.pdf
     """
 
-    def __init__(self, hidden_size, heads_num):
+    def __init__(self, input_size, heads_num, head_size):
         super(MultiHeadedAttention, self).__init__()
-        self.hidden_size = hidden_size
+        self.input_size = input_size
         self.heads_num = heads_num
-        self.per_head_size = hidden_size // heads_num
+        self.per_head_size = head_size
 
-        self.linear_layers = nn.ModuleList([
-            nn.Linear(hidden_size, hidden_size) for _ in range(2)
-        ])
-        self.final_linear = nn.Linear(hidden_size, hidden_size)
-
-        self.layer_norm = nn.LayerNorm(hidden_size)
+        self.key_proj = nn.Linear(input_size, heads_num * input_size)
+        self.value_proj = nn.Linear(input_size, heads_num * head_size)
 
     def forward(self, key, value, query, mask=None):
         """
@@ -93,31 +88,21 @@ class MultiHeadedAttention(nn.Module):
         Returns:
             output: [batch_size x seq_length x hidden_size]
         """
-        batch_size, seq_length, hidden_size = key.size()
+        batch_size, seq_length, input_size = key.size()
         heads_num = self.heads_num
         per_head_size = self.per_head_size
-
-        def shape(x):
-            return x. \
-                contiguous(). \
-                view(batch_size, seq_length, heads_num, per_head_size). \
-                transpose(1, 2)
 
         def unshape(x):
             return x. \
                 transpose(1, 2). \
                 contiguous(). \
-                view(batch_size, seq_length, hidden_size)
+                view(batch_size, seq_length, -1)
 
-        orginal_value = value
-        key, value = [l(x). \
-                        view(batch_size, -1, heads_num, per_head_size). \
-                        transpose(1, 2) \
-                    for l, x in zip(self.linear_layers, (key, value))
-                    ]
+        key = self.key_proj(key).view(batch_size, -1, heads_num, input_size).transpose(1, 2)
+        value = self.value_proj(value).view(batch_size, -1, heads_num, per_head_size).transpose(1, 2)
 
         scores = torch.matmul(query, key.transpose(-2, -1))
-        scores = scores / math.sqrt(float(per_head_size))
+        scores = scores / math.sqrt(float(input_size))
         if mask is not None:
             scores = scores + mask
         probs = nn.Softmax(dim=-1)(scores)

@@ -16,17 +16,12 @@ GERL 的主模型
     ]
 }
 """
-import math
-
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from datasets.vocab import WordVocab
 from modules.self_attend import SelfAttendLayer
 from modules.title_encoder import TitleEncoder
-from utils.model_util import build_embedding_layer
 
 
 class Model(nn.Module):
@@ -36,19 +31,19 @@ class Model(nn.Module):
         self.cfg = cfg
         self.batch_size = cfg.training.batch_size
         self.neg_count = cfg.model.neg_count
-        self.embedding_size = cfg.model.embedding_size
+        self.embedding_size = cfg.model.id_embedding_size
         self.max_user_one_hop = cfg.dataset.max_user_one_hop
         self.max_user_two_hop = cfg.dataset.max_user_two_hop
         self.max_news_two_hop = cfg.dataset.max_news_two_hop
 
         # Init Layers
-        self.user_embedding = nn.Embedding(len(cfg.dataset.user_count), cfg.model.embedding_size)
-        self.newsid_embedding = nn.Embedding(len(cfg.dataset.news_count), cfg.model.embedding_size)
+        self.user_embedding = nn.Embedding(len(cfg.dataset.user_count), cfg.model.id_embedding_size)
+        self.newsid_embedding = nn.Embedding(len(cfg.dataset.news_count), cfg.model.id_embedding_size)
         self.title_encoder = TitleEncoder(cfg)
-        self.user_two_hop_attend = SelfAttendLayer(cfg.model.embedding_size, cfg.model.embedding_size)
-        self.user_one_hop_attend = SelfAttendLayer(cfg.model.embedding_size, cfg.model.embedding_size)
-        self.news_two_hop_id_attend = SelfAttendLayer(cfg.model.embedding_size, cfg.model.embedding_size)
-        self.news_two_hop_title_attend = SelfAttendLayer(cfg.model.embedding_size, cfg.model.embedding_size)
+        self.user_two_hop_attend = SelfAttendLayer(cfg.model.id_embedding_size, cfg.model.id_embedding_size)
+        self.user_one_hop_attend = SelfAttendLayer(cfg.model.id_embedding_size, cfg.model.id_embedding_size)
+        self.news_two_hop_id_attend = SelfAttendLayer(cfg.model.id_embedding_size, cfg.model.id_embedding_size)
+        self.news_two_hop_title_attend = SelfAttendLayer(cfg.model.id_embedding_size, cfg.model.id_embedding_size)
         self.dropout = nn.Dropout(cfg.model.dropout)
 
     def _arrange_input(self, batch):
