@@ -1,0 +1,7 @@
+logger:
+  name: basic
+  save_dir: ${env:GERL}/outputs
+  project: gerl_base
+  log_freq: 10
+  project_name: mind
+  experiment_name: gerl_base
