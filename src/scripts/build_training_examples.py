@@ -23,7 +23,7 @@ def build_examples(cfg, df: List[str],
     
     def _get_neighors(neighbor_dict, key, max_neighbor_num):
         neighbors = neighbor_dict.get(key, [])
-        return neighbors[:max_neighbor_num] + [0, ] * (max_neighbor_num - len(neighbors))
+        return neighbors[:max_neighbor_num]
 
     f_out = os.path.join(ROOT_PATH, "data", cfg.fsize, "examples/training_examples.tsv")
     fw = open(f_out, "w", encoding="utf-8")
@@ -38,18 +38,18 @@ def build_examples(cfg, df: List[str],
         neighbor_users = _get_neighors(user_two_hop, user_index, cfg.max_user_two_hop)
         
         for pair in row["pairs"]:
-            hist_users = []
+            # hist_users = []
             neighbor_news = []
             target_news = [newsid_vocab.stoi.get(pair[0], 0)] + [newsid_vocab.stoi.get(x, 0) for x in pair[1]]
             for news_index in target_news:
-                hist_users.append(_get_neighors(news_one_hop, news_index, cfg.max_news_one_hop))
+                # hist_users.append(_get_neighors(news_one_hop, news_index, cfg.max_news_one_hop))
                 neighbor_news.append(_get_neighors(news_two_hop, news_index, cfg.max_news_two_hop))
             j = {
                 "user": user_index,
                 "hist_news": hist_news,
                 "neighbor_users": neighbor_users,
                 "target_news": target_news,
-                "hist_users": hist_users,
+                # "hist_users": hist_users,
                 "neighbor_news": neighbor_news
             }
             fw.write(json.dumps(j) + "\n")
@@ -58,11 +58,17 @@ def build_examples(cfg, df: List[str],
 def load_hop_dict(fpath: str) -> Dict:
     lines = open(fpath, "r", encoding="utf-8").readlines()
     d = dict()
+    error_line_count = 0
     for line in lines:
-        key, vals = line.split("\t")[:2]
+        row = line.strip().split("\t")
+        if len(row) != 2:
+            error_line_count += 1
+            continue
+        key, vals = row[:2]
         vals = [int(x) for x in vals.split(",")]
-        d[key] = vals
-
+        d[int(key)] = vals
+    print("{} error lines: {}".format(fpath, error_line_count))
+    return d
 
 def main(cfg):
     f_train_samples = os.path.join(ROOT_PATH, "data", cfg.fsize, "train/samples.tsv")
@@ -97,6 +103,14 @@ if __name__ == "__main__":
                         help="Path of the output dir.")
     parser.add_argument("--fvocab", default="vocabs", type=str,
                         help="Path of the output dir.")
+    parser.add_argument("--max_user_one_hop", default=50, type=int,
+                        help="Maximum number of user one-hop neighbors.")
+    parser.add_argument("--max_news_one_hop", default=50, type=int,
+                        help="Maximum number of news one-hop neighbors.")
+    parser.add_argument("--max_user_two_hop", default=15, type=int,
+                        help="Maximum number of user two-hop neighbors.")
+    parser.add_argument("--max_news_two_hop", default=15, type=int,
+                        help="Maximum number of news two-hop neighbors.")
 
     args = parser.parse_args()
 

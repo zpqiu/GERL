@@ -67,7 +67,6 @@ def build_news_id_vocab(cfg, news_df):
     return news_vocab
 
 def build_word_vocab(cfg, news_df):
-    news_df['title_token'] = news_df['title'].apply(lambda x: ' '.join(word_tokenize(x)))
     word_vocab = WordVocab(news_df.title_token.values, max_size=cfg.size, min_freq=1, lower=cfg.lower)
     print("TEXT VOCAB SIZE: {}".format(len(word_vocab)))
     f_text_vocab_path = os.path.join(ROOT_PATH, cfg.output, "word_vocab.bin")
@@ -77,7 +76,7 @@ def build_word_vocab(cfg, news_df):
 def build_newsid_to_title(cfg, news_df: pd.DataFrame, newsid_vocab: WordVocab, word_vocab: WordVocab):
     news2title = np.zeros((len(newsid_vocab) + 1, cfg.max_title_len), dtype=int)
     news2title[0] = word_vocab.to_seq('<pad>', seq_len=cfg.max_title_len)
-    for row in news_df[["newsid", "title"]].values:
+    for row in news_df[["newsid", "title_token"]].values:
         news_id, title = row[:2]
         news_index = newsid_vocab.stoi[news_id]
         news2title[news_index], cur_len = word_vocab.to_seq(title, seq_len=cfg.max_title_len, with_len=True)
@@ -111,6 +110,10 @@ def main(cfg):
     all_news = pd.concat([train_news, dev_news, test_news], ignore_index=True)
     all_news = all_news.drop_duplicates("newsid")
     print("All news: {}".format(len(all_news)))
+
+    # 单独处理train news
+    train_news['title_token'] = train_news['title'].apply(lambda x: ' '.join(word_tokenize(x)))
+    all_news['title_token'] = all_news['title'].apply(lambda x: ' '.join(word_tokenize(x)))
 
     # Build user id vocab
     f_behaviors = os.path.join(ROOT_PATH, "data", cfg.fsize, "train/behaviors.tsv")
