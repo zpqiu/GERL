@@ -53,6 +53,7 @@ class TitleEncoder(nn.Module):
         titles = self.title_embedding[seqs]
         # [*, max_title_len, hidden_size]
         embs = self.word_embedding(titles)
+        embs = self.dropout(embs)
         hiddens = self.mh_self_attn(embs, embs, embs)
         hiddens = self.dropout(hiddens)
 
@@ -74,7 +75,8 @@ class MultiHeadedAttention(nn.Module):
         self.heads_num = heads_num
         self.per_head_size = head_size
 
-        self.key_proj = nn.Linear(input_size, heads_num * input_size)
+        self.query_proj = nn.Linear(input_size, heads_num * head_size)
+        self.key_proj = nn.Linear(input_size, heads_num * head_size)
         self.value_proj = nn.Linear(input_size, heads_num * head_size)
 
     def forward(self, key, value, query, mask=None):
@@ -97,12 +99,13 @@ class MultiHeadedAttention(nn.Module):
                 contiguous(). \
                 view(batch_size, seq_length, -1)
 
-        query = query.repeat(1, 1, heads_num).view(batch_size, -1, heads_num, input_size).transpose(1, 2)
-        key = self.key_proj(key).view(batch_size, -1, heads_num, input_size).transpose(1, 2)
+        query = self.query_proj(query).view(batch_size, -1, heads_num, per_head_size).transpose(1, 2)
+        # query = query.repeat(1, 1, heads_num).view(batch_size, -1, heads_num, input_size).transpose(1, 2)
+        key = self.key_proj(key).view(batch_size, -1, heads_num, per_head_size).transpose(1, 2)
         value = self.value_proj(value).view(batch_size, -1, heads_num, per_head_size).transpose(1, 2)
 
         scores = torch.matmul(query, key.transpose(-2, -1))
-        scores = scores / math.sqrt(float(input_size))
+        scores = scores / math.sqrt(float(per_head_size))
         if mask is not None:
             scores = scores + mask
         probs = nn.Softmax(dim=-1)(scores)

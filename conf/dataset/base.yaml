@@ -16,7 +16,7 @@ dataset:
   max_user_one_hop: 50
   max_user_two_hop: 15
   max_news_two_hop: 15
-  user_count: 720000
+  user_count: 900000
   news_count: 140000
   train_split_cnt: 40
   valid_split_cnt: 4
