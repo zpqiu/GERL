@@ -63,8 +63,11 @@ class Model(nn.Module):
         return [*, target_news_cnt]
         """
         user_embedding = self.user_embedding(user)
+        user_embedding = self.dropout(user_embedding)
         neighbor_users_embedding = self.user_embedding(neighbor_users)
+        neighbor_users_embedding = self.dropout(neighbor_users_embedding)
         neighbor_news_embedding = self.newsid_embedding(neighbor_news)
+        neighbor_news_embedding = self.dropout(neighbor_news_embedding)
 
         # User
         user_two_hop_rep = self.user_two_hop_attend(neighbor_users_embedding)
@@ -89,10 +92,14 @@ class Model(nn.Module):
         news_two_hop_title_reps = news_two_hop_title_reps.view(-1, target_news_cnt, self.embedding_size)
 
         # Logit
-        final_user_rep = torch.cat([user_one_hop_rep, user_embedding, user_two_hop_rep], dim=-1)
-        final_user_rep = final_user_rep.repeat(1, target_news_cnt).view(-1, self.embedding_size * 3)
-        final_target_reps = torch.cat([news_two_hop_title_reps, news_two_hop_id_reps, target_news_reps])
-        final_target_reps = final_target_reps.view(-1, self.embedding_size * 3)
+        # final_user_rep = torch.cat([user_one_hop_rep, user_embedding, user_two_hop_rep], dim=-1)
+        # final_user_rep = final_user_rep.repeat(1, target_news_cnt).view(-1, self.embedding_size * 3)
+        # final_target_reps = torch.cat([news_two_hop_title_reps, news_two_hop_id_reps, target_news_reps], dim=-1)
+        # final_target_reps = final_target_reps.view(-1, self.embedding_size * 3)
+        final_user_rep = user_one_hop_rep + user_embedding + user_two_hop_rep
+        final_user_rep = final_user_rep.repeat(1, target_news_cnt).view(-1, self.embedding_size)
+        final_target_reps = target_news_reps + news_two_hop_id_reps + news_two_hop_title_reps
+        final_target_reps = final_target_reps.view(-1, self.embedding_size)
 
         logits = torch.sum(final_user_rep * final_target_reps, dim=-1)
         logits = logits.view(-1, target_news_cnt)
