@@ -53,7 +53,7 @@ def build_word_embeddings(vocab, pretrained_embedding, weights_output_file):
     np.save(weights_output_file, weights_matrix)
 
 def build_user_id_vocab(cfg, behavior_df):
-    user_vocab = WordVocab(behavior_df.uid.values, max_size=720000, min_freq=1, lower=cfg.lower)
+    user_vocab = WordVocab(behavior_df.uid.values, max_size=1000000, min_freq=1, lower=cfg.lower)
     print("USER ID VOCAB SIZE: {}".format(len(user_vocab)))
     f_user_vocab_path = os.path.join(ROOT_PATH, cfg.output, "userid_vocab.bin")
     user_vocab.save_vocab(f_user_vocab_path)
@@ -116,9 +116,15 @@ def main(cfg):
     all_news['title_token'] = all_news['title'].apply(lambda x: ' '.join(word_tokenize(x)))
 
     # Build user id vocab
-    f_behaviors = os.path.join(ROOT_PATH, "data", cfg.fsize, "train/behaviors.tsv")
-    train_behavior = pd.read_csv(f_behaviors, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
-    _ = build_user_id_vocab(cfg, train_behavior)
+    f_train_behaviors = os.path.join(ROOT_PATH, "data", cfg.fsize, "train/behaviors.tsv")
+    f_dev_behaviors = os.path.join(ROOT_PATH, "data", cfg.fsize, "dev/behaviors.tsv")
+    f_test_behaviors = os.path.join(ROOT_PATH, "data", cfg.fsize, "test/behaviors.tsv")
+    train_behavior = pd.read_csv(f_train_behaviors, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+    dev_behavior = pd.read_csv(f_dev_behaviors, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+    test_behavior = pd.read_csv(f_test_behaviors, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
+    behaviors_df = pd.concat([train_behavior, dev_behavior, test_behavior], ignore_index=True)
+    behaviors_df = behaviors_df.drop_duplicates("uid")
+    _ = build_user_id_vocab(cfg, behaviors_df)
     
     # Build news id vocab
     newsid_vocab = build_news_id_vocab(cfg, all_news)

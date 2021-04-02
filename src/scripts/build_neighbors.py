@@ -106,10 +106,12 @@ def main(cfg):
     newsid_vocab = WordVocab.load_vocab(f_news_vocab)
 
     train_behavior = pd.read_csv(f_train_behaviors, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
-    train_behavior = train_behavior.drop_duplicates("uid")
+    train_behavior = train_behavior.fillna("")
+    train_behavior = train_behavior[train_behavior["hist"]!=""].drop_duplicates("uid")
     f_test_behaviors = os.path.join(ROOT_PATH, "data", cfg.fsize, "test/behaviors.tsv")
     test_behavior = pd.read_csv(f_test_behaviors, sep="\t", encoding="utf-8", names=["id", "uid", "time", "hist", "imp"])
-    test_behavior = test_behavior.drop_duplicates("uid")
+    test_behavior = test_behavior.fillna("")
+    test_behavior = test_behavior[test_behavior["hist"]!=""].drop_duplicates("uid")
 
     # Train one- and two-hops
     train_user_one_hop, train_news_one_hop = build_one_hop_neighbors(cfg, train_behavior, user_vocab, newsid_vocab, "train")
