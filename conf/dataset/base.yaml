@@ -6,7 +6,7 @@ dataset:
   train: ${dataset.root_path}/training_examples
   valid: ${dataset.root_path}/eval_examples.tsv
   valid_sample: ${dataset.root_path}/eval_examples.sample.tsv
-  test: ${dataset.root_path}/test_set_dist
+  test: ${dataset.root_path}/test_examples
   vocab_subdir: data/vocabs
   user_vocab: ${env:GERL}/${dataset.vocab_subdir}/userid_vocab.bin
   word_vocab: ${env:GERL}/${dataset.vocab_subdir}/word_vocab.bin
