@@ -106,13 +106,6 @@ def init_processes(cfg, local_rank, dataset, fn, backend='nccl'):
 
     fn(cfg, local_rank, device, corpus_path=dataset)
 
-
-def set_log_service(api_token, params, project_name="alexchiu/mind", exp_name="base_gat"):
-    train_dir = os.path.dirname(__file__)
-    # neptune.init(project_name, api_token=api_token)
-    # neptune.create_experiment(name=exp_name, params=params, upload_source_files=[train_dir + '/models/kg_model.py'])
-
-
 @hydra.main(config_path="../conf/train.yaml")
 def main(cfg):
     # init_exp(cfg)

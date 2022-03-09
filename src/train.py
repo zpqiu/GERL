@@ -181,12 +181,6 @@ def init_processes(cfg, local_rank, dataset, fn, backend='nccl'):
     fn(cfg, local_rank, device, corpus_path=dataset)
 
 
-def set_log_service(api_token, params, project_name="alexchiu/mind", exp_name="base_gat"):
-    train_dir = os.path.dirname(__file__)
-    # neptune.init(project_name, api_token=api_token)
-    # neptune.create_experiment(name=exp_name, params=params, upload_source_files=[train_dir + '/models/kg_model.py'])
-
-
 def split_dataset(dataset, gpu_count):
     sub_len = len(dataset) // gpu_count
     if len(dataset) != sub_len * gpu_count:
